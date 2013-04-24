@@ -73,6 +73,7 @@ def main():
     usage = "usage: %prog [options] HOST[,HOST..]"
     parser = OptionParser(usage=usage)
     parser.add_option('-p', '--ports', dest='ports', help='forward port')
+    parser.add_option('-g', '--opts', dest='opts', help='global ssh options')
     parser.add_option('-e', '--exec', dest='execcmd', help='execute comand')
     opt, args = parser.parse_args()
     if len(args) < 1:
@@ -84,6 +85,9 @@ def main():
     common_options = ['-t', '-A']
     if ports:
         common_options += _create_forwardopt(ports)
+
+    if opt.opts:
+        common_options += parsecsv(opt.opts)
 
     executessh(hosts, common_options, opt.execcmd)
 
