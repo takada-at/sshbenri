@@ -20,7 +20,7 @@ def parsecsv(string):
     if not string: return []
     return [val.lstrip().rstrip() for val in string.split(',')]
 
-def createssh(hosts, common_options, confpath=None, command=None):
+def createssh(hosts, common_options, confpath=None, command=None, redirectin=None):
     commands = []
     config = loadconfig(confpath)
     for host in hosts:
@@ -55,6 +55,8 @@ def createssh(hosts, common_options, confpath=None, command=None):
     if command:
         command = "\'{command}\'".format(command=command)
         commands.append(command)
+        if redirectin:
+            commands + '< {redirectin}'.format(redirectin=redirectin)
 
     executecommand = " ".join(commands)
     return executecommand
