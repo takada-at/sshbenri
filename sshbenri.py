@@ -10,6 +10,7 @@ def loadconfig(path=None):
     if path is None:
         path = os.path.expanduser('~/.projectconfig.py')
 
+    if not os.path.exists(path): return {}
     G = {}
     L = {}
     execfile(path, G, L)
@@ -52,6 +53,7 @@ def createssh(hosts, common_options, confpath=None, command=None):
         commands.append(sshcommand)
 
     if command:
+        command = "\'{command}\'".format(command=command)
         commands.append(command)
 
     executecommand = " ".join(commands)
