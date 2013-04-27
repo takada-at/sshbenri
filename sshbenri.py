@@ -59,10 +59,11 @@ def createssh(hosts, common_options, confpath=None, command=None):
     executecommand = " ".join(commands)
     return executecommand
 
-def executessh(hosts, common_options, execcmd, confpath=None):
+def executessh(hosts, common_options, execcmd, confpath=None, dryrun=False):
     executecommand = createssh(hosts, common_options, confpath, command=execcmd)
     print executecommand
-    os.system(executecommand)
+    if not dryrun:
+        os.system(executecommand)
 
 def _create_forwardopt(ports):
     res = []
@@ -77,6 +78,7 @@ def main():
     parser.add_option('-p', '--ports', dest='ports', help='forward port')
     parser.add_option('-g', '--opts', dest='opts', help='global ssh options')
     parser.add_option('-e', '--exec', dest='execcmd', help='execute comand')
+    parser.add_option('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
     opt, args = parser.parse_args()
     if len(args) < 1:
         parser.print_help()
@@ -91,7 +93,7 @@ def main():
     if opt.opts:
         common_options += parsecsv(opt.opts)
 
-    executessh(hosts, common_options, opt.execcmd)
+    executessh(hosts, common_options, opt.execcmd, dryrun=opt.dryrun)
 
 if __name__=='__main__':
     main()
