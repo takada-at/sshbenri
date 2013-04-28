@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # coding:utf-8
 
+u"""
+ sshbenri
+ ========
+ 多重SSHを便利に使うためのスクリプト
+"""
+
 import json
 from optparse import OptionParser
 import os
@@ -34,17 +40,16 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
 
         if host.find('ssh ')==0:
             #もともとSSHコマンドの形をしてる場合はそのまま実行
-            commands.append(host)
-            continue
+            sshcommand = host + ' '
+        else:
+            port = 22
+            if host.find(':')>=0:
+                host, port = host.split(':')
+                port = int(port)
 
-        port = 22
-        if host.find(':')>=0:
-            host, port = host.split(':')
-            port = int(port)
-
-        sshcommand = "ssh {host} ".format(host=host)
-        if port != 22:
-            sshcommand += "-p {port} ".format(port=port)
+            sshcommand = "ssh {host} ".format(host=host)
+            if port != 22:
+                sshcommand += "-p {port} ".format(port=port)
 
         if common_options:
             # 全部につけるオプション
