@@ -15,7 +15,7 @@ import sys
 def loadconfig(path=None):
     if path is None:
         path = os.path.expanduser('~/.projectconfig.py')
-
+        
     if not os.path.exists(path): return {}
     G = {}
     L = {}
@@ -26,7 +26,13 @@ def parsecsv(string):
     if not string: return []
     return [val.lstrip().rstrip() for val in string.split(',')]
 
-def createssh(hosts, common_options, confpath=None, command=None, redirectin=None):
+def escape(command, depth):
+    escapechar = '\\' * ((depth-1)*2+1)
+    escapedcommand = command.replace('$', escapechar + '$').\
+        replace('~', escapechar+'~')
+    return escapedcommand
+    
+def createssh(hosts, common_options, confpath=None, command=None, redirectin=None, depth=0):
     commands = []
     config = loadconfig(confpath)
     for host in hosts:
@@ -34,8 +40,9 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
         appconfig = config.get(host)
         if appconfig:
             expandedhosts = parsecsv(appconfig['host'])
-            sshcommand = createssh(expandedhosts, common_options, confpath)
+            sshcommand = createssh(expandedhosts, common_options, confpath, depth=depth)
             commands.append(sshcommand)
+            depth += len(expandedhosts)
             continue
 
         if host.find('ssh ')==0:
@@ -55,11 +62,12 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
             # 全部につけるオプション
             sshcommand += '%s ' % (' '.join(common_options),)
 
-        commands.append(sshcommand)
+        escapedsshcommand = escape(sshcommand, depth)
+        commands.append(escapedsshcommand)
+        depth += 1
 
     if command:
-        command = "\'{command}\'".format(command=command)
-        commands.append(command)
+        commands.append(escape(command, depth))
         if redirectin:
             commands + '< {redirectin}'.format(redirectin=redirectin)
 
