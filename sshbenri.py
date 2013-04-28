@@ -46,11 +46,11 @@ def getescapechar(depth):
     else:
         n = 2 ** (depth-1) + 1
     return '\\' * int(n)
-    
+
+reg = re.compile(r'([\$~])')
 def escape(command, depth):
     escapechar = getescapechar(depth)
-    escapedcommand = command.replace('$', escapechar + '$').\
-        replace('~', escapechar+'~')
+    escapedcommand = re.sub(reg, escapechar+r'\\1', command)
     return escapedcommand
     
 def createssh(hosts, common_options, confpath=None, command=None, redirectin=None, depth=0):
@@ -88,7 +88,7 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
         depth += 1
 
     if command:
-        commands.append(command.strip())
+        commands.append("'"+command.strip()+"'")
         if redirectin:
             commands + '< {redirectin}'.format(redirectin=redirectin)
 
