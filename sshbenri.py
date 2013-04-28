@@ -10,6 +10,7 @@ u"""
 import json
 from optparse import OptionParser
 import os
+import re
 import sys
     
 def loadconfig(path=None):
@@ -24,16 +25,30 @@ def loadconfig(path=None):
 
 def parsecsv(string):
     if not string: return []
-    return [val.lstrip().rstrip() for val in string.split(',')]
+    return [val.strip() for val in string.split(',')]
 
-def escape(command, depth):
+def quotecommands(commands):
+    depth = len(commands)-1
+    res   = ""
+    for command in reversed(commands):
+        escapechar = getescapechar(depth)
+        escapedcommand = escape(command, depth)
+        res = escapedcommand + ' ' +res
+        depth -= 1
+
+    return res.strip()
+
+def getescapechar(depth):
     if depth == 0:
         n = 0
     elif depth == 1:
         n = 1
     else:
         n = 2 ** (depth-1) + 1
-    escapechar = '\\' * int(n)
+    return '\\' * int(n)
+    
+def escape(command, depth):
+    escapechar = getescapechar(depth)
     escapedcommand = command.replace('$', escapechar + '$').\
         replace('~', escapechar+'~')
     return escapedcommand
@@ -46,8 +61,8 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
         appconfig = config.get(host)
         if appconfig:
             expandedhosts = parsecsv(appconfig['host'])
-            sshcommand = createssh(expandedhosts, common_options, confpath, depth=depth)
-            commands.append(sshcommand)
+            sshcommands = createssh(expandedhosts, common_options, confpath, depth=depth)
+            commands += sshcommands
             depth += len(expandedhosts)
             continue
 
@@ -69,20 +84,19 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
             if port != 22:
                 sshcommand += "-p {port} ".format(port=port)
 
-        escapedsshcommand = escape(sshcommand, depth)
-        commands.append(escapedsshcommand.lstrip().rstrip())
+        commands.append(sshcommand.strip())
         depth += 1
 
     if command:
-        commands.append(escape(command, depth))
+        commands.append(command.strip())
         if redirectin:
             commands + '< {redirectin}'.format(redirectin=redirectin)
 
-    executecommand = " ".join(commands)
-    return executecommand
+    return commands
 
 def executessh(hosts, common_options, execcmd, confpath=None, dryrun=False):
-    executecommand = createssh(hosts, common_options, confpath, command=execcmd)
+    commands = createssh(hosts, common_options, confpath, command=execcmd)
+    executecommand = quotecommands(commands)
     print executecommand
     if not dryrun:
         os.system(executecommand)
