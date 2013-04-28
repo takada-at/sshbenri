@@ -27,7 +27,13 @@ def parsecsv(string):
     return [val.lstrip().rstrip() for val in string.split(',')]
 
 def escape(command, depth):
-    escapechar = '\\' * ((depth-1)*2+1)
+    if depth == 0:
+        n = 0
+    elif depth == 1:
+        n = 1
+    else:
+        n = 2 ** (depth-1) + 1
+    escapechar = '\\' * int(n)
     escapedcommand = command.replace('$', escapechar + '$').\
         replace('~', escapechar+'~')
     return escapedcommand
@@ -45,25 +51,26 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
             depth += len(expandedhosts)
             continue
 
+        sshcommand = 'ssh '
+        if common_options:
+            # 全部につけるオプション
+            sshcommand += '%s ' % (' '.join(common_options),)
+
         if host.find('ssh ')==0:
             #もともとSSHコマンドの形をしてる場合はそのまま実行
-            sshcommand = host + ' '
+            sshcommand += host[4:]
         else:
             port = 22
             if host.find(':')>=0:
                 host, port = host.split(':')
                 port = int(port)
 
-            sshcommand = "ssh {host} ".format(host=host)
+            sshcommand += host
             if port != 22:
                 sshcommand += "-p {port} ".format(port=port)
 
-        if common_options:
-            # 全部につけるオプション
-            sshcommand += '%s ' % (' '.join(common_options),)
-
         escapedsshcommand = escape(sshcommand, depth)
-        commands.append(escapedsshcommand)
+        commands.append(escapedsshcommand.lstrip().rstrip())
         depth += 1
 
     if command:
