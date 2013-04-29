@@ -30,27 +30,24 @@ def parsecsv(string):
 def quotecommands(commands):
     depth = len(commands)-1
     res   = ""
-    for command in reversed(commands):
+    for depth, command in enumerate(commands):
         escapechar = getescapechar(depth)
         escapedcommand = escape(command, depth)
-        res = escapedcommand + ' ' +res
-        depth -= 1
+        res += ' ' + escapedcommand
 
     return res.strip()
 
 def getescapechar(depth):
-    if depth == 0:
-        n = 0
-    elif depth == 1:
-        n = 1
-    else:
-        n = 2 ** (depth-1) + 1
-    return '\\' * int(n)
+    x = (2 ** depth) - 1
+    return '\\' * int(x)
 
-reg = re.compile(r'([\$~])')
+specialchars = ['$', '~', '&', '|']
 def escape(command, depth):
     escapechar = getescapechar(depth)
-    escapedcommand = re.sub(reg, escapechar+r'\\1', command)
+    escapedcommand = command.replace('\\', '\\'*(2**depth))
+    for char in specialchars:
+        escapedcommand = escapedcommand.replace(char, escapechar+char)
+        
     return escapedcommand
     
 def createssh(hosts, common_options, confpath=None, command=None, depth=0):
@@ -81,7 +78,7 @@ def createssh(hosts, common_options, confpath=None, command=None, depth=0):
         depth += 1
 
     if command:
-        commands.append("'"+command.strip()+"'")
+        commands.append(command.strip())
 
     return commands
 
