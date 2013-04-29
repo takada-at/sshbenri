@@ -15,7 +15,7 @@ import sys
     
 def loadconfig(path=None):
     if path is None:
-        path = os.path.expanduser('~/.projectconfig.py')
+        path = os.path.expanduser('~/.sshbenri.py')
         
     if not os.path.exists(path): return {}
     G = {}
