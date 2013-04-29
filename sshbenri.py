@@ -53,7 +53,7 @@ def escape(command, depth):
     escapedcommand = re.sub(reg, escapechar+r'\\1', command)
     return escapedcommand
     
-def createssh(hosts, common_options, confpath=None, command=None, redirectin=None, depth=0):
+def createssh(hosts, common_options, confpath=None, command=None, depth=0):
     commands = []
     config = loadconfig(confpath)
     for host in hosts:
@@ -75,22 +75,13 @@ def createssh(hosts, common_options, confpath=None, command=None, redirectin=Non
             #もともとSSHコマンドの形をしてる場合はそのまま実行
             sshcommand += host[4:]
         else:
-            port = 22
-            if host.find(':')>=0:
-                host, port = host.split(':')
-                port = int(port)
-
             sshcommand += host
-            if port != 22:
-                sshcommand += "-p {port} ".format(port=port)
 
         commands.append(sshcommand.strip())
         depth += 1
 
     if command:
         commands.append("'"+command.strip()+"'")
-        if redirectin:
-            commands + '< {redirectin}'.format(redirectin=redirectin)
 
     return commands
 
