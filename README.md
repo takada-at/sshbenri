@@ -20,6 +20,7 @@ sshbenri
     sshbenri 'host1, -i ~/otherkey host2, host3'
 
 → 実行されるコマンド
+
     ssh -t -A host1 ssh -t -A -i \~/otherkey host2 ssh -t -A host3
 
 ### すべてに12345ポートを通す
@@ -27,6 +28,7 @@ sshbenri
     sshbenri 'host1, host2, host3' -p 12345
 
 → 実行されるコマンド
+
     ssh -t -A -L12345:localhost:12345 host1 ssh -t -A -L12345:localhost:12345 host2 ssh -t -A -L12345:localhost:12345 host3
 
 ### echo $HOME && \$HOMEを実行
@@ -34,6 +36,7 @@ sshbenri
     sshbenri 'host1, host2, host3' -e 'echo $HOME && \$HOME'
 
 → 実行されるコマンド
+
     ssh -t -A host1 ssh -t -A host2 ssh -t -A host3 echo \\\\\\\$HOME \\\\\\\&\\\\\\\& \\\\\\\\\\\\\\\$HOME
 
 ## 設定ファイル
@@ -45,9 +48,10 @@ home直下に.sshbenri.py というファイルがあれば、それを読みま
         "host": "host1, user@host2"
     },
 
-下のコマンドが以下のように展開されます。
+下のコマンドが
 
     sshbenri app1
 
+以下のように展開されます。
 
     ssh -t -A host1 ssh -t -A user@host2
