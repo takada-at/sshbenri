@@ -4,9 +4,9 @@ sshbenri
 多重SSH接続を便利に使用するためのスクリプトです。
 
 ## インストール
-git clone https://github.com/takada-at/sshbenri.git
-cd sshbenri
-python setup.py install
+    git clone https://github.com/takada-at/sshbenri.git
+    cd sshbenri
+    python setup.py install
 
 ## 使い方
 
@@ -34,7 +34,8 @@ python setup.py install
 
 ## 設定ファイル
 home直下に.sshbenri.py というファイルがあれば、それを読みます。
-以下の設定が登録されていれば、
+
+たとえば以下の設定が登録されていれば、
 
     "app1": {
         "host": "host1, user@host2"
