@@ -7,4 +7,5 @@ setup(name='sshbenri',
       description='ssh benri script',
       scripts=['scripts/sshbenri'],
       py_modules=['sshbenri'],
+      requires=['argcomplete'],
      )

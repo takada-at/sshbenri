@@ -8,7 +8,9 @@ u"""
 """
 
 import json
-from optparse import OptionParser
+import argcomplete
+from argcomplete.completers import ChoicesCompleter
+from argparse import ArgumentParser
 import os
 import re
 import sys
@@ -97,27 +99,25 @@ def _create_forwardopt(ports):
     return res
 
 def main():
-    usage = "usage: %prog [options] HOST[,HOST..]"
-    parser = OptionParser(usage=usage)
-    parser.add_option('-p', '--ports', dest='ports', help='forward port')
-    parser.add_option('-g', '--opts', dest='opts', help='global ssh options')
-    parser.add_option('-e', '--exec', dest='execcmd', help='execute comand')
-    parser.add_option('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
-    opt, args = parser.parse_args()
-    if len(args) < 1:
-        parser.print_help()
-        exit()
-
-    hosts = parsecsv(args[0])
-    ports = parsecsv(opt.ports)
+    config = loadconfig()
+    parser = ArgumentParser(description='generate ssh command')
+    parser.add_argument('-p', '--ports', dest='ports', help='forward port')
+    parser.add_argument('-g', '--opts', dest='opts', help='global ssh options')
+    parser.add_argument('-e', '--exec', dest='execcmd', help='execute comand')
+    parser.add_argument('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
+    parser.add_argument('hosts', help='target hosts A,B,C').completer=ChoicesCompleter(config.keys())
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+    hosts = parsecsv(args.hosts)
+    ports = parsecsv(args.ports)
     common_options = ['-t', '-A']
     if ports:
         common_options += _create_forwardopt(ports)
 
-    if opt.opts:
+    if args.opts:
         common_options += parsecsv(opt.opts)
 
-    executessh(hosts, common_options, opt.execcmd, dryrun=opt.dryrun)
+    executessh(hosts, common_options, args.execcmd, dryrun=args.dryrun)
 
 if __name__=='__main__':
     main()
