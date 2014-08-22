@@ -91,6 +91,12 @@ def executessh(hosts, common_options, execcmd, config=None, dryrun=False):
     if not dryrun:
         os.system(executecommand)
 
+def create_ssh_command(hosts, common_options, execcmd, config=None, dryrun=False):
+    if config is None: config = {}
+    commands = createssh(hosts, common_options, config, command=execcmd)
+    executecommand = quotecommands(commands)
+    return executecommand
+
 def _create_forwardopt(ports):
     res = []
     for fport in ports:
