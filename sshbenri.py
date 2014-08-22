@@ -59,7 +59,7 @@ def createssh(hosts, common_options, config, command=None, depth=0):
         appconfig = config.get(host)
         if appconfig:
             expandedhosts = parsecsv(appconfig['host'])
-            sshcommands = createssh(expandedhosts, common_options, confpath, depth=depth)
+            sshcommands = createssh(expandedhosts, common_options, config, depth=depth)
             commands += sshcommands
             depth += len(expandedhosts)
             continue
@@ -117,7 +117,7 @@ def main():
     if args.opts:
         common_options += parsecsv(opt.opts)
 
-    config = loadconfig(confpath)
+    config = loadconfig(None)
     executessh(hosts, common_options, args.execcmd, config=config, dryrun=args.dryrun)
 
 if __name__=='__main__':
