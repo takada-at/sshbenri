@@ -52,9 +52,8 @@ def escape(command, depth):
         
     return escapedcommand
     
-def createssh(hosts, common_options, confpath=None, command=None, depth=0):
+def createssh(hosts, common_options, config, command=None, depth=0):
     commands = []
-    config = loadconfig(confpath)
     for host in hosts:
         # sshコマンドをつくる
         appconfig = config.get(host)
@@ -84,8 +83,9 @@ def createssh(hosts, common_options, confpath=None, command=None, depth=0):
 
     return commands
 
-def executessh(hosts, common_options, execcmd, confpath=None, dryrun=False):
-    commands = createssh(hosts, common_options, confpath, command=execcmd)
+def executessh(hosts, common_options, execcmd, config=None, dryrun=False):
+    if config is None: config = {}
+    commands = createssh(hosts, common_options, config, command=execcmd)
     executecommand = quotecommands(commands)
     print executecommand
     if not dryrun:
@@ -117,7 +117,8 @@ def main():
     if args.opts:
         common_options += parsecsv(opt.opts)
 
-    executessh(hosts, common_options, args.execcmd, dryrun=args.dryrun)
+    config = loadconfig(confpath)
+    executessh(hosts, common_options, args.execcmd, config=config, dryrun=args.dryrun)
 
 if __name__=='__main__':
     main()
