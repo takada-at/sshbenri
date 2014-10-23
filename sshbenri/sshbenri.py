@@ -8,8 +8,6 @@ u"""
  多重SSHを便利に使うためのスクリプト
 """
 
-import argcomplete
-from argcomplete.completers import ChoicesCompleter
 from argparse import ArgumentParser
 import os
 
@@ -52,8 +50,7 @@ def main():
     parser.add_argument('-g', '--opts', dest='opts', help='global ssh options')
     parser.add_argument('-e', '--exec', dest='execcmd', help='execute comand')
     parser.add_argument('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
-    parser.add_argument('hosts', help='target hosts A,B,C', type=parsecsv).completer=ChoicesCompleter(config.keys())
-    argcomplete.autocomplete(parser)
+    parser.add_argument('hosts', help='target hosts A,B,C', type=parsecsv)
     args = parser.parse_args()
     hosts = args.hosts
     ports = args.ports
