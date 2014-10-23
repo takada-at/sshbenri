@@ -116,8 +116,12 @@ def create_remote_command(hosts, execcmd):
     """
     リモートで実行するコマンドを作成
     """
-    cmd = "'{cmd}'".format(cmd=execcmd.strip())
-    cmd = escape(cmd, len(hosts)-1)
+    depth = len(hosts)-1
+    esc = getescapechar(depth+1)
+    cmd = execcmd.strip()
+    cmd = escape(cmd, depth)
+    cmd = cmd.replace("'", "'{esc}''".format(esc=esc))
+    cmd = "'{cmd}'".format(cmd=cmd)
     return cmd
 
 def executessh(hosts, common_options, execcmd, config=None, dryrun=False):
