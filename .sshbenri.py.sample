@@ -3,6 +3,6 @@ hosts = {
         "host": "host1, user@host2"
     },
     "app2": {
-        "host": "host2, ssh -p 10022 user@host3"
+        "host": "host2, -p 10022 user@host3"
     },
 }

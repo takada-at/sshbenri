@@ -8,123 +8,14 @@ u"""
  多重SSHを便利に使うためのスクリプト
 """
 
-import json
 import argcomplete
 from argcomplete.completers import ChoicesCompleter
 from argparse import ArgumentParser
 import os
-import re
-import sys
 
-def loadconfig(path=None):
-    """
-    コンフィグのロード
-    """
-    if path is None:
-        path = os.path.expanduser('~/.sshbenri.py')
+from . import core
 
-    if not os.path.exists(path): return {}
-    G = {}
-    L = {}
-    execfile(path, G, L)
-    return L['hosts']
-
-def parsecsv(string):
-    if not string: return []
-    return [val.strip() for val in string.split(',')]
-
-def quotecommands(commands):
-    """
-    SSHコマンドのクオート
-
-    Arguments:
-      commands(list): ssh command list
-    """
-    depth = len(commands)-1
-    res   = ""
-    for depth, command in enumerate(commands):
-        escapechar = getescapechar(depth)
-        escapedcommand = escape(command, depth)
-        res += ' ' + escapedcommand
-
-    return res.strip()
-
-def getescapechar(depth):
-    x = (2 ** depth) - 1
-    return '\\' * int(x)
-
-specialchars = ['$', '~', '&', '|']
-def escape(command, depth):
-    """
-    コマンドのエスケープ
-
-    Arguments:
-      command(str): コマンド
-      depth(int): 深さ
-
-    Example::
-
-    >>> escape('ssh -i ~/key', 1)
-    'ssh -i \\~/'
-    """
-    escapechar = getescapechar(depth)
-    escapedcommand = command.replace('\\', '\\'*(2**depth))
-    for char in specialchars:
-        escapedcommand = escapedcommand.replace(char, escapechar+char)
-
-    return escapedcommand
-
-def createssh(hosts, common_options, config, depth=0):
-    """
-    多段SSHコマンドをリストの形で作成
-    """
-    commands = []
-    for host in hosts:
-        # sshコマンドをつくる
-        sshcommand = 'ssh '
-        if common_options:
-            # 全部につけるオプション
-            sshcommand += '%s ' % (' '.join(common_options),)
-
-        if host.find('ssh ')==0:
-            #もともとSSHコマンドの形をしてる場合はそのまま実行
-            sshcommand += host[4:]
-        else:
-            sshcommand += host
-
-        commands.append(sshcommand.strip())
-        depth += 1
-
-    return commands
-
-def expandhosts(hosts, config):
-    """
-    コンフィグの設定を読み込んで、ホストを展開
-    """
-    res = []
-    for host in hosts:
-        if host in config:
-            expandedhosts = parsecsv(config[host].get('host', host))
-        else:
-            expandedhosts = [host]
-
-        res += expandedhosts
-
-    return res
-
-def create_remote_command(hosts, execcmd):
-    """
-    リモートで実行するコマンドを作成
-    """
-    depth = len(hosts)-1
-    esc = getescapechar(depth+1)
-    cmd = execcmd.strip()
-    cmd = escape(cmd, depth)
-    cmd = cmd.replace("'", "'{esc}''".format(esc=esc))
-    cmd = "'{cmd}'".format(cmd=cmd)
-    return cmd
-
-def executessh(hosts, common_options, execcmd, config=None, dryrun=False):
+def executessh(hosts, common_options, execcmd, config={}, dryrun=False):
     """
     sshコマンドの作成と実行
 
@@ -135,55 +26,15 @@ def executessh(hosts, common_options, execcmd, config=None, dryrun=False):
       config(dict): 設定
       dryrun(bool): Falseなら表示のみ
     """
-    if config is None: config = {}
-    hosts = expandhosts(hosts, config)
-    commands = createssh(hosts, common_options, config)
-    executecommand = quotecommands(commands)
+    hosts = core.expandhosts(hosts, config)
+    commands = core.createssh(hosts, common_options, config)
+    executecommand = core.quotecommands(commands)
     if execcmd:
-        executecommand += ' ' + create_remote_command(hosts, execcmd)
+        executecommand += ' ' + core.create_remote_command(hosts, execcmd)
 
     print(executecommand)
     if not dryrun:
         os.system(executecommand)
-
-def executersync(hosts, common_options, srcpath, destpath, config=None, dryrun=False, rsyncopt=''):
-    """
-    rsyncコマンドの作成と実行
-
-    Arguments:
-      hosts(list): 複数ホストのリスト
-      common_options(list): sshコマンドのオプション
-      srcpath(str): ローカルパス
-      destpath(str): リモートパス
-      config(dict): 設定
-      dryrun(bool): Falseなら表示のみ
-      rsyncopt(str): rsyncのオプション
-    """
-    if config is None: config = {}
-    hosts = expandhosts(hosts, config)
-    if not hosts: return
-    opts = ['-rv']
-    if rsyncopt:
-        opts.append(rsyncopt)
-
-    if len(hosts)>1:
-        commands = createssh(hosts[:-1], common_options, config)
-        executecommand = quotecommands(commands)
-        opts.append("-e '{sshcomd} ssh'".format(sshcomd=executecommand))
-
-    cmds = ['rsync']
-    cmds += opts
-    cmds += [srcpath, "{host}:'{destpath}'".format(host=hosts[-1], destpath=destpath)]
-    cmd = " ".join(cmds)
-    print(cmd)
-    if not dryrun:
-        os.system(cmd)
-
-def create_ssh_command(hosts, common_options, execcmd, config=None, dryrun=False):
-    if config is None: config = {}
-    commands = createssh(hosts, common_options, config, command=execcmd)
-    executecommand = quotecommands(commands)
-    return executecommand
 
 def _create_forwardopt(ports):
     res = []
