@@ -4,7 +4,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 def loadconfig(path=None):
     """
-    コンフィグのロード
+    Load Config .py File
+
+    default path is ~/.sshbenri.py
     """
     if path is None:
         path = os.path.expanduser('~/.sshbenri.py')
@@ -21,7 +23,7 @@ def parsecsv(string):
 
 def quotecommands(commands):
     """
-    SSHコマンドのクオート
+    quote ssh command
 
     Arguments:
       commands(list): ssh command list
@@ -41,11 +43,11 @@ def getescapechar(depth):
 specialchars = ['$', '~', '&', '|']
 def escape(command, depth):
     """
-    コマンドのエスケープ
+    escape single command
 
     Arguments:
-      command(str): コマンド
-      depth(int): 深さ
+      command(str): command string
+      depth(int):
 
     Example::
 
@@ -61,7 +63,7 @@ def escape(command, depth):
 
 def escape_quote(string, depth):
     """
-    全体を''でクオートする。先にクオートのエスケープをする
+    escape quote char
     """
     esc = getescapechar(depth+1)
     string = string.replace("'", "'{esc}''".format(esc=esc))
@@ -69,18 +71,18 @@ def escape_quote(string, depth):
 
 def createssh(hosts, common_options, config, depth=0):
     """
-    多段SSHコマンドをリストの形で作成
+    create ssh command in list
     """
     commands = []
     for host in hosts:
-        # sshコマンドをつくる
+        # create ssh command
         sshcommand = 'ssh '
         if common_options:
-            # 全部につけるオプション
-            sshcommand += '%s ' % (' '.join(common_options),)
+            # common option
+            sshcommand += '{} '.format(' '.join(common_options))
 
         if host.find('ssh ')==0:
-            #もともとSSHコマンドの形をしてる場合はそのまま実行
+            # we admit host name such as 'ssh -i ~/key host'
             sshcommand += host[4:]
         else:
             sshcommand += host
@@ -92,7 +94,7 @@ def createssh(hosts, common_options, config, depth=0):
 
 def expandhosts(hosts, config):
     """
-    コンフィグの設定を読み込んで、ホストを展開
+    load config and expand host names
     """
     res = []
     for host in hosts:
@@ -107,7 +109,7 @@ def expandhosts(hosts, config):
 
 def create_remote_command(hosts, execcmd):
     """
-    リモートで実行するコマンドを作成
+    create remote execute command
     """
     depth = len(hosts)-1
     cmd = execcmd.strip()
@@ -115,9 +117,7 @@ def create_remote_command(hosts, execcmd):
     cmd = "'"+escape_quote(cmd, depth)+"'"
     return cmd
 
-def create_ssh_command(hosts, common_options, execcmd, config=None, dryrun=False):
-    if config is None: config = {}
+def create_ssh_command(hosts, common_options, execcmd, config={}, dryrun=False):
     commands = createssh(hosts, common_options, config, command=execcmd)
     executecommand = quotecommands(commands)
     return executecommand
-

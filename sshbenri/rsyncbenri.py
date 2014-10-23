@@ -3,9 +3,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 u"""
- rsyncbenri
- ===========
- 多重SSHでrsyncを便利にする
+rsyncbenri
+=============
+
 """
 
 import argcomplete
@@ -15,7 +15,24 @@ import sys
 from . import core
 from .core import (loadconfig, parsecsv)
 
-def createcommand(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='', sshopts=''):
+def createcommand(hosts, srcpath, destpath, config={}, rsyncopt='', sshopts=''):
+    """
+    create rsync command
+
+    Arguments:
+      hosts(list): list of host names
+      srcpath(str): local path
+      destpath(str): remote path
+      config(dict): setting
+      rsyncopt(str): rsync option
+      sshopt(str): ssh option
+
+
+    Example::
+
+    >>> createcommand(['gw', 'host'], './local/', '~/remote/')
+    u"rsync -e 'ssh -t -A gw ssh' -rv ./local/ host:'~/remote/'"
+    """
     common_options = ['-t', '-A']
     if sshopts:
         common_options += sshopts.split()
@@ -40,20 +57,21 @@ def createcommand(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt=''
 
 def executersync(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='', sshopts=''):
     """
-    rsyncコマンドの作成と実行
+    create and execute rsync command
 
     Arguments:
-      hosts(list): 複数ホストのリスト
-      srcpath(str): ローカルパス
-      destpath(str): リモートパス
-      config(dict): 設定
-      dryrun(bool): Falseなら表示のみ
-      rsyncopt(str): rsyncのオプション
+      hosts(list): list of host names
+      srcpath(str): local path
+      destpath(str): remote path
+      config(dict): setting
+      dryrun(bool): if True, does not execute command
+      rsyncopt(str): rsync option
+      sshopt(str): ssh option
     """
     if not os.path.exists(os.path.expanduser(srcpath)):
         sys.stderr("warning: {} does not exists\n".format(srcpath))
 
-    cmd = createcommand(hosts, srcpath, destpath, config, dryrun, rsyncopt, sshopts)
+    cmd = createcommand(hosts, srcpath, destpath, config, rsyncopt, sshopts)
     print(cmd)
     if not dryrun:
         os.system(cmd)
