@@ -14,17 +14,18 @@ from argparse import ArgumentParser
 import os
 
 from . import core
+from .core import parsecsv
 
 def executessh(hosts, common_options, execcmd, config={}, dryrun=False):
     """
-    sshコマンドの作成と実行
+    create and execute ssh command
 
     Arguments:
-      hosts(list): 複数ホストのリスト
-      common_options(list): sshコマンドのオプション
-      execcmd(str): リモートで実行するコマンド
-      config(dict): 設定
-      dryrun(bool): Falseなら表示のみ
+      hosts(list): list of host names
+      common_options(list): ssh option
+      execcmd(str): remote execute command
+      config(dict): setting
+      dryrun(bool): if False, does not execute
     """
     hosts = core.expandhosts(hosts, config)
     commands = core.createssh(hosts, common_options, config)
@@ -44,8 +45,9 @@ def _create_forwardopt(ports):
     return res
 
 def main():
-    config = loadconfig()
+    config = core.loadconfig()
     parser = ArgumentParser(description='generate ssh command')
+    parser.add_argument('-c', '--config', type=os.path.expanduser)
     parser.add_argument('-p', '--ports', dest='ports', help='forward port', type=parsecsv)
     parser.add_argument('-g', '--opts', dest='opts', help='global ssh options')
     parser.add_argument('-e', '--exec', dest='execcmd', help='execute comand')
@@ -60,9 +62,9 @@ def main():
         common_options += _create_forwardopt(ports)
 
     if args.opts:
-        common_options += parsecsv(opt.opts)
+        common_options += parsecsv(args.opts)
 
-    config = loadconfig(None)
+    config = core.loadconfig(args.config)
     executessh(hosts, common_options, args.execcmd, config=config, dryrun=args.dryrun)
 
 if __name__=='__main__':

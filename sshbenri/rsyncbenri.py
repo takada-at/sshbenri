@@ -79,6 +79,7 @@ def executersync(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='',
 def main():
     config = loadconfig()
     parser = ArgumentParser(description='generate ssh command')
+    parser.add_argument('-c', '--config', type=os.path.expanduser)
     parser.add_argument('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
     parser.add_argument('--opts', dest='opts', help='rsync opt', default='')
     parser.add_argument('--sshopts', dest='sshopts', help='ssh opt', default='')
@@ -88,7 +89,7 @@ def main():
     args = parser.parse_args()
     host, dest = args.dest.split(':')
     hosts = parsecsv(host)
-    config = loadconfig(None)
+    config = core.loadconfig(args.config)
     executersync(hosts, args.srcpath, dest, config=config, dryrun=args.dryrun, rsyncopt=args.opts, sshopts=args.sshopts)
 
 if __name__=='__main__':
