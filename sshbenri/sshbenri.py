@@ -42,6 +42,16 @@ def _create_forwardopt(ports):
 
     return res
 
+def readscript():
+    script = ""
+    while True:
+        res = raw_input("> ")
+        if res.rstrip()=="": break
+        script += res + " "
+
+    print(script)
+    return script
+
 def main():
     config = core.loadconfig()
     parser = ArgumentParser(description='generate ssh command')
@@ -50,6 +60,7 @@ def main():
     parser.add_argument('-g', '--opts', dest='opts', help='global ssh options')
     parser.add_argument('-e', '--exec', dest='execcmd', help='execute comand')
     parser.add_argument('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
+    parser.add_argument('-i', '--stdin', action='store_true', help='read script from stdin')
     parser.add_argument('hosts', help='target hosts A,B,C', type=parsecsv)
     args = parser.parse_args()
     hosts = args.hosts
@@ -60,6 +71,9 @@ def main():
 
     if args.opts:
         common_options += parsecsv(args.opts)
+
+    if args.stdin:
+        args.execcmd = readscript()
 
     config = core.loadconfig(args.config)
     executessh(hosts, common_options, args.execcmd, config=config, dryrun=args.dryrun)

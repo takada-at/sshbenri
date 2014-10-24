@@ -40,7 +40,7 @@ def getescapechar(depth):
     x = (2 ** depth) - 1
     return '\\' * int(x)
 
-specialchars = ['$', '~', '&', '|']
+specialchars = ['\\', '$', '~', '&', '|', '>', '[', ']', ';', '\n', '(', ')', '*', '{', '}']
 def escape(command, depth):
     """
     escape single command
@@ -55,7 +55,7 @@ def escape(command, depth):
     'ssh -i \\~/'
     """
     escapechar = getescapechar(depth)
-    escapedcommand = command.replace('\\', '\\'*(2**depth))
+    escapedcommand = command
     for char in specialchars:
         escapedcommand = escapedcommand.replace(char, escapechar+char)
 
@@ -118,6 +118,6 @@ def create_remote_command(hosts, execcmd):
     return cmd
 
 def create_ssh_command(hosts, common_options, execcmd, config={}, dryrun=False):
-    commands = createssh(hosts, common_options, config, command=execcmd)
+    commands = createssh(hosts, common_options, config)
     executecommand = quotecommands(commands)
     return executecommand
