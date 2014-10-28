@@ -40,7 +40,7 @@ def getescapechar(depth):
     x = (2 ** depth) - 1
     return '\\' * int(x)
 
-specialchars = ['\\', '$', '~', '&', '|', '>', '[', ']', ';', '\n', '(', ')', '*', '{', '}']
+specialchars = ['\\', '$', '~', '&', '|', '<', '>', '[', ']', ';', '\n', '(', ')', '*']
 def escape(command, depth):
     """
     escape single command
