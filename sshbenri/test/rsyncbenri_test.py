@@ -16,7 +16,11 @@ def test_executersync():
     expect = "rsync -rv -e 'ssh -t -A gw ssh' {src} {host}:'{dst}'".format(src=srcpath, dst=destpath, host=hosts[-1])
     assert expect == cmd
 
-
+def test_createcommand():
+    hosts = ['gw', 'host1']
+    cmd = rsyncbenri.createcommand(hosts, '~/', '~/')
+    expect = "rsync -rv -e 'ssh -t -A gw ssh' ~/ host1:'\\~/'"
+    assert expect == cmd
 
 
 

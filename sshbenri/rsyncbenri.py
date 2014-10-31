@@ -49,9 +49,11 @@ def createcommand(hosts, srcpath, destpath, config={}, rsyncopt='', sshopts=''):
         quoteescape = core.escape_quote(executecommand, 0)
         opts.append("-e '{sshcomd} ssh'".format(sshcomd=quoteescape))
 
+    depth = len(hosts)
+    dest  = "'{}'".format(core.escape(destpath, depth-1))
     cmds = ['rsync']
     cmds += opts
-    cmds += [srcpath, "{host}:'{destpath}'".format(host=hosts[-1], destpath=destpath)]
+    cmds += [srcpath, "{host}:{destpath}".format(host=hosts[-1], destpath=dest)]
     cmd = " ".join(cmds)
     return cmd
 
