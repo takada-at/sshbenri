@@ -57,7 +57,7 @@ def createcommand(hosts, srcpath, destpath, config={}, rsyncopt='', sshopts=''):
     cmd = " ".join(cmds)
     return cmd
 
-def executersync(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='', sshopts=''):
+def executersync(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='', sshopts='', syncproxy=False):
     """
     create and execute rsync command
 
@@ -78,6 +78,13 @@ def executersync(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='',
     if not dryrun:
         os.system(cmd)
 
+    if syncproxy and len(hosts)>1:
+        for i in range(1, len(hosts)):
+            cmd = createcommand(hosts[:i], srcpath, destpath, config, rsyncopt, sshopts)
+            print(cmd)
+            if not dryrun:
+                os.system(cmd)
+
 def main():
     config = loadconfig()
     parser = ArgumentParser(description='generate ssh command')
@@ -85,6 +92,7 @@ def main():
     parser.add_argument('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
     parser.add_argument('--opts', dest='opts', help='rsync opt', default='')
     parser.add_argument('--sshopts', dest='sshopts', help='ssh opt', default='')
+    parser.add_argument('--syncproxy', action='store_true', help='sync to proxy server')
     parser.add_argument('srcpath')
     parser.add_argument('dest')
     argcomplete.autocomplete(parser)
@@ -92,7 +100,7 @@ def main():
     host, dest = args.dest.split(':')
     hosts = parsecsv(host)
     config = core.loadconfig(args.config)
-    executersync(hosts, args.srcpath, dest, config=config, dryrun=args.dryrun, rsyncopt=args.opts, sshopts=args.sshopts)
+    executersync(hosts, args.srcpath, dest, config=config, dryrun=args.dryrun, rsyncopt=args.opts, sshopts=args.sshopts, syncproxy=args.syncproxy)
 
 if __name__=='__main__':
     main()
