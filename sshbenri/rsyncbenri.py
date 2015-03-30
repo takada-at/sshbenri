@@ -74,17 +74,15 @@ def executersync(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='',
         sys.stderr("warning: {} does not exists\n".format(srcpath))
 
     cmd = createcommand(hosts, srcpath, destpath, config, rsyncopt, sshopts)
+    hosts = core.expandhosts(hosts, config)
+    if syncproxy and len(hosts)>1:
+        for i in range(1, len(hosts)):
+            cmd += "; " + createcommand(hosts[:i], srcpath, destpath, config, rsyncopt, sshopts)
+
     print(cmd)
     if not dryrun:
         os.system(cmd)
 
-    hosts = core.expandhosts(hosts, config)
-    if syncproxy and len(hosts)>1:
-        for i in range(1, len(hosts)):
-            cmd = createcommand(hosts[:i], srcpath, destpath, config, rsyncopt, sshopts)
-            print(cmd)
-            if not dryrun:
-                os.system(cmd)
 
 def main():
     config = loadconfig()

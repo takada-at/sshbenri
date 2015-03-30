@@ -30,10 +30,11 @@ def test_createcommand2():
     hosts = ['gw', 'host1']
     os.system = Mock()
     rsyncbenri.executersync(hosts, '~/', '~/', syncproxy=True)
-    assert 2 == os.system.call_count
-    args = os.system.call_args_list
-    assert "rsync -rv -e 'ssh -t -A gw ssh' ~/ host1:'\~/'" == args[0][0][0]
-    assert "rsync -rv ~/ gw:'~/'" == args[1][0][0]
+    assert 1 == os.system.call_count
+    args = os.system.call_args_list[0][0][0]
+    arg1 = args.split('; ')[0]
+    assert "rsync -rv -e 'ssh -t -A gw ssh' ~/ host1:'\~/'" == arg1
+    assert "rsync -rv ~/ gw:'~/'" == args.split('; ')[1]
     imp.reload(os)
 
 
@@ -41,10 +42,11 @@ def test_createcommand3():
     config = dict(someapp={'host': "gw,host1"})
     os.system = Mock()
     rsyncbenri.executersync(['someapp'], '~/', '~/', config=config, syncproxy=True)
-    assert 2 == os.system.call_count
-    args = os.system.call_args_list
-    assert "rsync -rv -e 'ssh -t -A gw ssh' ~/ host1:'\~/'" == args[0][0][0]
-    assert "rsync -rv ~/ gw:'~/'" == args[1][0][0]
+    assert 1 == os.system.call_count
+    args = os.system.call_args_list[0][0][0]
+    arg1 = args.split('; ')[0]
+    assert "rsync -rv -e 'ssh -t -A gw ssh' ~/ host1:'\~/'" == arg1
+    assert "rsync -rv ~/ gw:'~/'" == args.split('; ')[1]
     imp.reload(os)
 
 
