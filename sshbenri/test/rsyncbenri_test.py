@@ -37,4 +37,15 @@ def test_createcommand2():
     imp.reload(os)
 
 
+def test_createcommand3():
+    config = dict(someapp={'host': "gw,host1"})
+    os.system = Mock()
+    rsyncbenri.executersync(['someapp'], '~/', '~/', config=config, syncproxy=True)
+    assert 2 == os.system.call_count
+    args = os.system.call_args_list
+    assert "rsync -rv -e 'ssh -t -A gw ssh' ~/ host1:'\~/'" == args[0][0][0]
+    assert "rsync -rv ~/ gw:'~/'" == args[1][0][0]
+    imp.reload(os)
+
+
 

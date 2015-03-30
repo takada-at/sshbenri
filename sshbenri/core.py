@@ -99,7 +99,11 @@ def expandhosts(hosts, config):
     res = []
     for host in hosts:
         if host in config:
-            expandedhosts = parsecsv(config[host].get('host', host))
+            ehost = config[host].get('host', host)
+            if isinstance(ehost, (str, unicode)):
+                expandedhosts = parsecsv(ehost)
+            elif isinstance(ehost, (list, tuple)):
+                expandedhosts = ehost
         else:
             expandedhosts = [host]
 

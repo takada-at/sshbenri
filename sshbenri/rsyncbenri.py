@@ -78,6 +78,7 @@ def executersync(hosts, srcpath, destpath, config={}, dryrun=False, rsyncopt='',
     if not dryrun:
         os.system(cmd)
 
+    hosts = core.expandhosts(hosts, config)
     if syncproxy and len(hosts)>1:
         for i in range(1, len(hosts)):
             cmd = createcommand(hosts[:i], srcpath, destpath, config, rsyncopt, sshopts)
