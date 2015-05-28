@@ -78,14 +78,17 @@ def executersync(hosts, srcpath, destpath, config={},
     if not os.path.exists(os.path.expanduser(srcpath)):
         sys.stderr("warning: {} does not exists\n".format(srcpath))
 
-    hosts = core.expandhosts(hosts, config)
-    targets = core.get_rsync_target(hosts=hosts, config=config,
-                                    syncall=syncproxy)
+    expanded_hosts = core.expandhosts(hosts, config)
+    targets = core.get_rsync_target(host=hosts[-1],
+                                    hosts=expanded_hosts,
+                                    config=config,
+                                    sync_all=syncproxy)
     cmds = []
-    for i, host in enumerate(hosts):
+    for i, host in enumerate(expanded_hosts):
         if host not in targets:
             continue
-        cmd = createcommand(hosts[:i+1], srcpath, destpath, config, rsyncopt,
+        cmd = createcommand(expanded_hosts[:i+1], srcpath, destpath,
+                            config, rsyncopt,
                             sshopts)
         cmds.append(cmd)
 

@@ -29,3 +29,17 @@ def test_create_remote_command2():
     r = core.create_remote_command(hosts, cmd)
     print(r)
     assert r"'date +'\\\''%Y-%m-%d'\\\'''" == r
+
+
+def test_get_rsync_target():
+    config = {
+        'myhost': {
+            'host': ['via.example.com', 'myhost.example.com'],
+            'target': ['via.example.com', 'myhost.example.com'],
+        }
+    }
+    config = core.expand_config(config)
+    hosts = core.expandhosts(['myhost'], config)
+    targets = core.get_rsync_target('myhost', hosts,
+                                    config, sync_all=False)
+    assert ['via.example.com', 'myhost.example.com'] == targets

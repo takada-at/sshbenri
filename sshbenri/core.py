@@ -13,8 +13,11 @@ def expand_config(config):
             expandedhosts = parsecsv(ehost)
         elif isinstance(ehost, (list, tuple)):
             expandedhosts = ehost
-        if 'target' not in host:
+        if 'target' in conf:
+            target = conf['target']
+        else:
             target = [expandedhosts[-1]]
+
         if isinstance(target, string_types):
             target_l = parsecsv(target)
         elif isinstance(target, (list, tuple)):
@@ -160,17 +163,16 @@ def create_ssh_command(hosts, common_options, execcmd, config={},
     return executecommand
 
 
-def get_rsync_target(hosts, config, syncall):
+def get_rsync_target(host, hosts, config, sync_all):
     """
     :param hosts: list of host
     :param config: dict
-    :param syncall: bool
+    :param sync_all: bool
     :return: list of host
     :rtype: list[str]
     """
-    if syncall:
+    if sync_all:
         return hosts
-    host = hosts[-1]
     if host in config:
-        return config[host].get('target', host)
-    return [host]
+        return config[host].get('target', hosts[-1])
+    return hosts[-1]
