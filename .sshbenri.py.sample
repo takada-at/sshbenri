@@ -1,8 +1,9 @@
 hosts = {
     "app1": {
-        "host": "host1, user@host2"
+        "host": ["host1", "user@host2"]
     },
     "app2": {
-        "host": "host2, -p 10022 user@host3"
+        "host": ["host2", "-p 10022 user@host3"],
+        "target": ["host2", "-p 10022 user@host3"],
     },
 }

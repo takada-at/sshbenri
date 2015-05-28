@@ -11,9 +11,9 @@ sshbenri
 ```
 
 ## 使い方
- カンマ区切りでホストを渡すと、sshコマンドを作成して実行します。
+ 複数のホストを渡すと、sshコマンドを作成して実行します。
 ```
-$ sshbenri 'host1, host2, host3'
+$ sshbenri host1 host2 host3
 ```
 
  実行されるコマンド
@@ -25,7 +25,7 @@ $ ssh -t -A host1 ssh -t -A host2 ssh -t -A host3
 ### オプションが必要な場合
 
 ```
-$ sshbenri 'host1, -i ~/otherkey host2, host3'
+$ sshbenri host1 '-i ~/otherkey host2' host3
 ```
 
 実行されるコマンド
@@ -37,7 +37,7 @@ $ ssh -t -A host1 ssh -t -A -i \~/otherkey host2 ssh -t -A host3
 ### すべてに12345ポートを通す
 
 ```
-$ sshbenri 'host1, host2, host3' -p 12345
+$ sshbenri host1 host2 host3 -p 12345
 ```
 
  実行されるコマンド
@@ -49,7 +49,7 @@ $ ssh -t -A -L12345:localhost:12345 host1 ssh -t -A -L12345:localhost:12345 host
 ### echo $HOME && echo \$HOMEを実行
 
 ```
-$ sshbenri 'host1, host2' -e 'echo $HOME && echo \$HOME'
+$ sshbenri host1 host2 -e 'echo $HOME && echo \$HOME'
 ```
 
  実行されるコマンド
@@ -64,7 +64,7 @@ home直下に.sshbenri.py というファイルがあれば、それを読みま
 たとえば以下の設定が登録されていれば、
 
     "app1": {
-        "host": "host1, user@host2"
+        "host": ["host1", "user@host2"]
     },
 
 下のコマンドが
@@ -84,7 +84,7 @@ $ ssh -t -A host1 ssh -t -A user@host2
 rsyncbenriも開発しました
 
 ```
-$ rsyncbenri ./path 'host0,host1':/path
+$ rsyncbenri ./path host0 host1:/path
 ```
 
 実行されるコマンド
