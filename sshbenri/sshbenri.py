@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
 
-u"""
+"""
  sshbenri
  ========
  多重SSHを便利に使うためのスクリプト
 """
 
 from argparse import ArgumentParser
+from itertools import chain
 import os
 
+from .compat import input_func
 from . import core
 from .core import parsecsv
+
 
 def executessh(hosts, common_options, execcmd, config={}, dryrun=False):
     """
@@ -35,6 +39,7 @@ def executessh(hosts, common_options, execcmd, config={}, dryrun=False):
     if not dryrun:
         os.system(executecommand)
 
+
 def _create_forwardopt(ports):
     res = []
     for fport in ports:
@@ -42,28 +47,40 @@ def _create_forwardopt(ports):
 
     return res
 
+
 def readscript():
     script = ""
     while True:
-        res = raw_input("> ")
-        if res.rstrip()=="": break
+        res = input_func("> ")
+        if res.rstrip() == "":
+            break
         script += res + " "
 
     print(script)
     return script
 
-def main():
-    config = core.loadconfig()
+
+def _get_parser():
     parser = ArgumentParser(description='generate ssh command')
     parser.add_argument('-c', '--config', type=os.path.expanduser)
-    parser.add_argument('-p', '--ports', dest='ports', help='forward port', type=parsecsv)
+    parser.add_argument(
+        '-p', '--ports', dest='ports', help='forward port', type=parsecsv)
     parser.add_argument('-g', '--opts', dest='opts', help='global ssh options')
     parser.add_argument('-e', '--exec', dest='execcmd', help='execute comand')
-    parser.add_argument('-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
-    parser.add_argument('-i', '--stdin', action='store_true', help='read script from stdin')
-    parser.add_argument('hosts', help='target hosts A,B,C', type=parsecsv)
+    parser.add_argument(
+        '-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
+    parser.add_argument(
+        '-i', '--stdin', action='store_true', help='read script from stdin',
+        )
+    parser.add_argument('hosts', help='target hosts A,B,C', type=parsecsv,
+                        nargs='+')
+    return parser
+
+
+def main():
+    parser = _get_parser()
     args = parser.parse_args()
-    hosts = args.hosts
+    hosts = list(chain.from_iterable(args.hosts))
     ports = args.ports
     common_options = ['-t', '-A']
     if ports:
@@ -76,7 +93,8 @@ def main():
         args.execcmd = readscript()
 
     config = core.loadconfig(args.config)
-    executessh(hosts, common_options, args.execcmd, config=config, dryrun=args.dryrun)
+    executessh(hosts, common_options, args.execcmd,
+               config=config, dryrun=args.dryrun)
 
-if __name__=='__main__':
+if __name__ == '__main__':
     main()

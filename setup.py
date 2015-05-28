@@ -6,5 +6,4 @@ setup(name='sshbenri',
       description='ssh benri script',
       scripts=['scripts/sshbenri', 'scripts/rsyncbenri'],
       packages=['sshbenri'],
-      requires=['argcomplete'],
-     )
+      )
