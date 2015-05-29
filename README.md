@@ -5,9 +5,7 @@ sshbenri
 
 ## インストール
 ```
-    git clone https://github.com/takada-at/sshbenri.git
-    cd sshbenri
-    python setup.py install
+pip install sshbenri
 ```
 
 ## 使い方
