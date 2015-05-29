@@ -79,10 +79,10 @@ def executersync(hosts, srcpath, destpath, config={},
         sys.stderr("warning: {} does not exists\n".format(srcpath))
 
     expanded_hosts = core.expandhosts(hosts, config)
-    targets = core.get_rsync_target(host=hosts[-1],
-                                    hosts=expanded_hosts,
-                                    config=config,
-                                    sync_all=syncproxy)
+    targets = core.get_target(host=hosts[-1],
+                              hosts=expanded_hosts,
+                              config=config,
+                              sync_all=syncproxy)
     cmds = []
     for i, host in enumerate(expanded_hosts):
         if host not in targets:
