@@ -163,7 +163,7 @@ def create_ssh_command(hosts, common_options, execcmd, config={},
     return executecommand
 
 
-def get_rsync_target(host, hosts, config, sync_all):
+def get_target(host, hosts, config, sync_all):
     """
     :param hosts: list of host
     :param config: dict

@@ -18,7 +18,8 @@ from . import core
 from .core import parsecsv
 
 
-def executessh(hosts, common_options, execcmd, config={}, dryrun=False):
+def executessh(hosts, common_options, execcmd, config={}, dryrun=False,
+               execute_targets=None):
     """
     create and execute ssh command
 
@@ -29,15 +30,30 @@ def executessh(hosts, common_options, execcmd, config={}, dryrun=False):
       config(dict): setting
       dryrun(bool): if False, does not execute
     """
-    hosts = core.expandhosts(hosts, config)
-    commands = core.createssh(hosts, common_options, config)
-    executecommand = core.quotecommands(commands)
-    if execcmd:
-        executecommand += ' ' + core.create_remote_command(hosts, execcmd)
+    expanded_hosts = core.expandhosts(hosts, config)
+    if execute_targets:
+        targets = execute_targets
+    else:
+        targets = core.get_target(host=hosts[-1],
+                                  hosts=expanded_hosts,
+                                  config=config,
+                                  sync_all=False)
+    cmds = []
+    for i, host in enumerate(expanded_hosts):
+        if host not in targets:
+            continue
+        commands = core.createssh(expanded_hosts[:i+1], common_options, config)
+        executecommand_t = core.quotecommands(commands)
+        if execcmd:
+            executecommand_t += ' ' + core.create_remote_command(hosts, execcmd)
+        cmds.append(executecommand_t)
 
+    cmds.reverse()
+    executecommand = "; ".join(cmds)
     print(executecommand)
     if not dryrun:
         os.system(executecommand)
+    return executecommand
 
 
 def _create_forwardopt(ports):
@@ -67,12 +83,14 @@ def _get_parser():
         '-p', '--ports', dest='ports', help='forward port', type=parsecsv)
     parser.add_argument('-g', '--opts', dest='opts', help='global ssh options')
     parser.add_argument('-e', '--exec', dest='execcmd', help='execute comand')
+    parser.add_argument('--execute-target', dest='execute_target',
+                        nargs='*')
     parser.add_argument(
         '-n', '--dryrun', dest='dryrun', action='store_true', help='dryrun')
     parser.add_argument(
         '-i', '--stdin', action='store_true', help='read script from stdin',
         )
-    parser.add_argument('hosts', help='target hosts A,B,C', type=parsecsv,
+    parser.add_argument('hosts', help='ssh hosts', type=parsecsv,
                         nargs='+')
     return parser
 
@@ -94,7 +112,8 @@ def main():
 
     config = core.loadconfig(args.config)
     executessh(hosts, common_options, args.execcmd,
-               config=config, dryrun=args.dryrun)
+               config=config, dryrun=args.dryrun,
+               execute_targets=args.execute_target)
 
 if __name__ == '__main__':
     main()
